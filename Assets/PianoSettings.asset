@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 601ee4b6c3cbb634194e96b37c6f1019, type: 3}
+  m_Name: PianoSettings
+  m_EditorClassIdentifier: Assembly-CSharp::PianoSettings
+  marginX: 0.002
+  marginZ: 0.002
+  pressDepth: 0.003
+  releaseDepth: 0.001
+  maxDepth: 0.02
+  minVelocityForSound: 0.02
+  maxVelocityForSound: 0.5
+  minVolume: 0.2
+  maxVolume: 1
+  showDebugLog: 1

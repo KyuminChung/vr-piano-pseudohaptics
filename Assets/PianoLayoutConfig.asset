@@ -1,0 +1,808 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c06772dbb61aac249be481cc901619bd, type: 3}
+  m_Name: PianoLayoutConfig
+  m_EditorClassIdentifier: Assembly-CSharp::PianoLayoutConfig
+  layoutName: Full 88 Key Layout
+  keys:
+  - keyIndex: 0
+    keyName: A0
+    isBlackKey: 0
+    minX: -0.810752
+    maxX: -0.78219
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: 0
+    noteClip: {fileID: 8300000, guid: fa51571c12dfac943addbf5edac0fa4f, type: 3}
+  - keyIndex: 1
+    keyName: As0
+    isBlackKey: 1
+    minX: -0.761775
+    maxX: -0.745554
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 40e2e75897adeff4b8355fb923b1c6b4, type: 3}
+  - keyIndex: 2
+    keyName: B0
+    isBlackKey: 0
+    minX: -0.779519
+    maxX: -0.750951
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: b42518e7cbad8b2438bb815d75c6817e, type: 3}
+  - keyIndex: 3
+    keyName: C1
+    isBlackKey: 0
+    minX: -0.748285
+    maxX: -0.719724
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 1d58e15b4df813842b650f982f26e9a2, type: 3}
+  - keyIndex: 4
+    keyName: Cs1
+    isBlackKey: 1
+    minX: -0.726467
+    maxX: -0.710247
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: cba2d1c772c37b048ba994ab61f85c62, type: 3}
+  - keyIndex: 5
+    keyName: D1
+    isBlackKey: 0
+    minX: -0.71705
+    maxX: -0.68849
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 7fa2a3baaf303d34097dc0e48eb1d0c5, type: 3}
+  - keyIndex: 6
+    keyName: Ds1
+    isBlackKey: 1
+    minX: -0.691157
+    maxX: -0.674937
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 4684c035ac989984b9eff3ad27c417b2, type: 3}
+  - keyIndex: 7
+    keyName: E1
+    isBlackKey: 0
+    minX: -0.685816
+    maxX: -0.657255
+    minZ: -0.18764
+    maxZ: 0.187636
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 01f9f74c1f978ba429ced9b893d5b160, type: 3}
+  - keyIndex: 8
+    keyName: F1
+    isBlackKey: 0
+    minX: -0.654582
+    maxX: -0.626014
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 17a518a54d72ea44c8ace65290c95fc4, type: 3}
+  - keyIndex: 9
+    keyName: Fs1
+    isBlackKey: 1
+    minX: -0.634795
+    maxX: -0.618574
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 121622c943a51fa4a97a163a20e32fe6, type: 3}
+  - keyIndex: 10
+    keyName: G1
+    isBlackKey: 0
+    minX: -0.623348
+    maxX: -0.594787
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: f9f60a7fe5ba96146bbff79f0dafac70, type: 3}
+  - keyIndex: 11
+    keyName: Gs1
+    isBlackKey: 1
+    minX: -0.599485
+    maxX: -0.583267
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: b637874c969f5934a9f697d221acdb44, type: 3}
+  - keyIndex: 12
+    keyName: A1
+    isBlackKey: 0
+    minX: -0.592113
+    maxX: -0.563552
+    minZ: -0.18764
+    maxZ: 0.187636
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 64225c584dbf3fc4eb3e6476c3e2f008, type: 3}
+  - keyIndex: 13
+    keyName: As1
+    isBlackKey: 1
+    minX: -0.543135
+    maxX: -0.526914
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: ba4d03207512f9f47adbf1529b6998e5, type: 3}
+  - keyIndex: 14
+    keyName: B1
+    isBlackKey: 0
+    minX: -0.56088
+    maxX: -0.532312
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 7ab3aa81895ca47429a13b138079d826, type: 3}
+  - keyIndex: 15
+    keyName: C2
+    isBlackKey: 0
+    minX: -0.529645
+    maxX: -0.501085
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: c5c0e917b61d36b499e63e42ad609c3b, type: 3}
+  - keyIndex: 16
+    keyName: Cs2
+    isBlackKey: 1
+    minX: -0.507827
+    maxX: -0.491607
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 144a5efa02478bc4d925a26b7f671b94, type: 3}
+  - keyIndex: 17
+    keyName: D2
+    isBlackKey: 0
+    minX: -0.498411
+    maxX: -0.469851
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 8f45db1e302354b40a81c2db1a8e7d85, type: 3}
+  - keyIndex: 18
+    keyName: Ds2
+    isBlackKey: 1
+    minX: -0.47252
+    maxX: -0.456299
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: c94e7da4a974cc24f8bbfc0b36e34056, type: 3}
+  - keyIndex: 19
+    keyName: E2
+    isBlackKey: 0
+    minX: -0.467177
+    maxX: -0.438616
+    minZ: -0.18764
+    maxZ: 0.187636
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 946fef7d74482d442bd8b451e762d649, type: 3}
+  - keyIndex: 20
+    keyName: F2
+    isBlackKey: 0
+    minX: -0.435942
+    maxX: -0.407375
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 9a4f03a466a139847b2970285c5f0686, type: 3}
+  - keyIndex: 21
+    keyName: Fs2
+    isBlackKey: 1
+    minX: -0.416155
+    maxX: -0.399934
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 243e0471cacdd474483949db686d3b0a, type: 3}
+  - keyIndex: 22
+    keyName: G2
+    isBlackKey: 0
+    minX: -0.404708
+    maxX: -0.376147
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 0da95e44d19b90c4db6f7f7c412618c5, type: 3}
+  - keyIndex: 23
+    keyName: Gs2
+    isBlackKey: 1
+    minX: -0.380847
+    maxX: -0.364627
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: a7bbc048be63a9842800906ac5b33b3f, type: 3}
+  - keyIndex: 24
+    keyName: A2
+    isBlackKey: 0
+    minX: -0.373474
+    maxX: -0.344913
+    minZ: -0.18764
+    maxZ: 0.187636
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 2e49b7d310a31fb4590b7538545ca3ba, type: 3}
+  - keyIndex: 25
+    keyName: As2
+    isBlackKey: 1
+    minX: -0.324495
+    maxX: -0.308274
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: c1b337be5c82c6e4ebf8505123055725, type: 3}
+  - keyIndex: 26
+    keyName: B2
+    isBlackKey: 0
+    minX: -0.342241
+    maxX: -0.313673
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 3dc198d3b4969e94bab87b1ab6bb05db, type: 3}
+  - keyIndex: 27
+    keyName: C3
+    isBlackKey: 0
+    minX: -0.311007
+    maxX: -0.282446
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: c2bb6f5951ebc324ab50d55b337c2979, type: 3}
+  - keyIndex: 28
+    keyName: Cs3
+    isBlackKey: 1
+    minX: -0.289187
+    maxX: -0.272966
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 3089e7365e8aee449875d4993c396280, type: 3}
+  - keyIndex: 29
+    keyName: D3
+    isBlackKey: 0
+    minX: -0.279772
+    maxX: -0.251212
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: acfeb73203ef33042b4e32de31b4550c, type: 3}
+  - keyIndex: 30
+    keyName: Ds3
+    isBlackKey: 1
+    minX: -0.25388
+    maxX: -0.237659
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: f15d49f7b7a120f45a437be86581370c, type: 3}
+  - keyIndex: 31
+    keyName: E3
+    isBlackKey: 0
+    minX: -0.248538
+    maxX: -0.219977
+    minZ: -0.18764
+    maxZ: 0.187636
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: bd0d1af5e5bd69f4787f9a0970569310, type: 3}
+  - keyIndex: 32
+    keyName: F3
+    isBlackKey: 0
+    minX: -0.217304
+    maxX: -0.188736
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 849faf4c9d4cb7c499c7fd52b8d7b035, type: 3}
+  - keyIndex: 33
+    keyName: Fs3
+    isBlackKey: 1
+    minX: -0.197515
+    maxX: -0.181297
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: a6f7de869d78b3343a4467e748b1c06c, type: 3}
+  - keyIndex: 34
+    keyName: G3
+    isBlackKey: 0
+    minX: -0.186069
+    maxX: -0.157509
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 970467ed7e4f2f0468795c7dac384a40, type: 3}
+  - keyIndex: 35
+    keyName: Gs3
+    isBlackKey: 1
+    minX: -0.162207
+    maxX: -0.145986
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 80df5295a341d17409978fa43c0292d8, type: 3}
+  - keyIndex: 36
+    keyName: A3
+    isBlackKey: 0
+    minX: -0.154835
+    maxX: -0.126274
+    minZ: -0.18764
+    maxZ: 0.187636
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: a22a1a49848cffc44994c15f23ff2772, type: 3}
+  - keyIndex: 37
+    keyName: As3
+    isBlackKey: 1
+    minX: -0.105857
+    maxX: -0.089636
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: fe5eb0f7c0e70964ba60c5979952737d, type: 3}
+  - keyIndex: 38
+    keyName: B3
+    isBlackKey: 0
+    minX: -0.123601
+    maxX: -0.095034
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: a854fc1338a67bb4eacda3d6e3a312d9, type: 3}
+  - keyIndex: 39
+    keyName: C4
+    isBlackKey: 0
+    minX: -0.092367
+    maxX: -0.063806
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 87ecc46dd1222154cbc244276a1c1d61, type: 3}
+  - keyIndex: 40
+    keyName: Cs4
+    isBlackKey: 1
+    minX: -0.070547
+    maxX: -0.054329
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: fcd7fbfea053f7e4f90d91f8aafc5a7c, type: 3}
+  - keyIndex: 41
+    keyName: D4
+    isBlackKey: 0
+    minX: -0.061132
+    maxX: -0.032572
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: eaebac04f74e6fd46a9e17a36dd17f2b, type: 3}
+  - keyIndex: 42
+    keyName: Ds4
+    isBlackKey: 1
+    minX: -0.035239
+    maxX: -0.019019
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 3cabab790750a6048abc9b5cf1bd495b, type: 3}
+  - keyIndex: 43
+    keyName: E4
+    isBlackKey: 0
+    minX: -0.029898
+    maxX: -0.001337
+    minZ: -0.18764
+    maxZ: 0.187636
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 2d576ec151ef5d1419e990cd6df8d374, type: 3}
+  - keyIndex: 44
+    keyName: F4
+    isBlackKey: 0
+    minX: 0.001336
+    maxX: 0.029904
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 19088801c8422624091214a0a12391ec, type: 3}
+  - keyIndex: 45
+    keyName: Fs4
+    isBlackKey: 1
+    minX: 0.021123
+    maxX: 0.037344
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 5bd4559a6e510b14f9a67b0fcf321f79, type: 3}
+  - keyIndex: 46
+    keyName: G4
+    isBlackKey: 0
+    minX: 0.03257
+    maxX: 0.061131
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: d374ce92bfd2f3f418defce51e57d589, type: 3}
+  - keyIndex: 47
+    keyName: Gs4
+    isBlackKey: 1
+    minX: 0.056433
+    maxX: 0.072654
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 70d626e77ba3e5841a5cff13d1b9c3db, type: 3}
+  - keyIndex: 48
+    keyName: A4
+    isBlackKey: 0
+    minX: 0.063805
+    maxX: 0.092366
+    minZ: -0.18764
+    maxZ: 0.187636
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 3b84419a4e950cb43b1a7586b4875949, type: 3}
+  - keyIndex: 49
+    keyName: As4
+    isBlackKey: 1
+    minX: 0.112783
+    maxX: 0.129004
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 96e369ec189b44b469adc46cf3719431, type: 3}
+  - keyIndex: 50
+    keyName: B4
+    isBlackKey: 0
+    minX: 0.095038
+    maxX: 0.123606
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: bf74e4852d2ae9945beac0708a2b7440, type: 3}
+  - keyIndex: 51
+    keyName: C5
+    isBlackKey: 0
+    minX: 0.126272
+    maxX: 0.154833
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: ee06faaed016d934c80d044cc6c4b736, type: 3}
+  - keyIndex: 52
+    keyName: Cs5
+    isBlackKey: 1
+    minX: 0.148091
+    maxX: 0.164312
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 7c4f66c79308522429de50e8f3947bc2, type: 3}
+  - keyIndex: 53
+    keyName: D5
+    isBlackKey: 0
+    minX: 0.157507
+    maxX: 0.186067
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: dadb5a7e81597fa48b2d516341f5ba87, type: 3}
+  - keyIndex: 54
+    keyName: Ds5
+    isBlackKey: 1
+    minX: 0.183401
+    maxX: 0.199619
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 2e3c8faa6c8ee2f4f9ae96e3d8ad845f, type: 3}
+  - keyIndex: 55
+    keyName: E5
+    isBlackKey: 0
+    minX: 0.188741
+    maxX: 0.217302
+    minZ: -0.18764
+    maxZ: 0.187636
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 5daf253b4867ec843ba8a09f664eeb17, type: 3}
+  - keyIndex: 56
+    keyName: F5
+    isBlackKey: 0
+    minX: 0.219975
+    maxX: 0.248543
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 489fc9129602f364396e06724e184826, type: 3}
+  - keyIndex: 57
+    keyName: Fs5
+    isBlackKey: 1
+    minX: 0.239763
+    maxX: 0.255984
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: e587b53b02647494c95067ed6eb13cda, type: 3}
+  - keyIndex: 58
+    keyName: G5
+    isBlackKey: 0
+    minX: 0.251209
+    maxX: 0.27977
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 49df919b95d6d2b4eb25cdd6caa69d52, type: 3}
+  - keyIndex: 59
+    keyName: Gs5
+    isBlackKey: 1
+    minX: 0.275071
+    maxX: 0.291291
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: b6474b382be091542b4fdcb5d71f8009, type: 3}
+  - keyIndex: 60
+    keyName: A5
+    isBlackKey: 0
+    minX: 0.282444
+    maxX: 0.311005
+    minZ: -0.18764
+    maxZ: 0.187636
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 2fbbc9f8722d28a4cab53d33899c2b63, type: 3}
+  - keyIndex: 61
+    keyName: As5
+    isBlackKey: 1
+    minX: 0.331423
+    maxX: 0.347642
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: e800bfb2c9e0b5249b66746a6b6d6225, type: 3}
+  - keyIndex: 62
+    keyName: B5
+    isBlackKey: 0
+    minX: 0.313678
+    maxX: 0.342245
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: f833f714e9959134db14fd3cebb85856, type: 3}
+  - keyIndex: 63
+    keyName: C6
+    isBlackKey: 0
+    minX: 0.344912
+    maxX: 0.373473
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 40ea5f2a335002e4185166d200ba4696, type: 3}
+  - keyIndex: 64
+    keyName: Cs6
+    isBlackKey: 1
+    minX: 0.366731
+    maxX: 0.382952
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 55a18308892c0734a9557e224ac92a20, type: 3}
+  - keyIndex: 65
+    keyName: D6
+    isBlackKey: 0
+    minX: 0.376147
+    maxX: 0.404707
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 73900ea387346054fa845dbc9ed32a8d, type: 3}
+  - keyIndex: 66
+    keyName: Ds6
+    isBlackKey: 1
+    minX: 0.402039
+    maxX: 0.418259
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 67d91f204d51843468cdd1fbd11f9d99, type: 3}
+  - keyIndex: 67
+    keyName: E6
+    isBlackKey: 0
+    minX: 0.407381
+    maxX: 0.435942
+    minZ: -0.18764
+    maxZ: 0.187636
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 80977425b1e8abf49ad370cebfbbb139, type: 3}
+  - keyIndex: 68
+    keyName: F6
+    isBlackKey: 0
+    minX: 0.438615
+    maxX: 0.467182
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: be778481c793471449c410016815dd3a, type: 3}
+  - keyIndex: 69
+    keyName: Fs6
+    isBlackKey: 1
+    minX: 0.458403
+    maxX: 0.474622
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: f6c4c8d2d7f3dfb4f9ccf3857ee22ef4, type: 3}
+  - keyIndex: 70
+    keyName: G6
+    isBlackKey: 0
+    minX: 0.469849
+    maxX: 0.49841
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 3951d89d9af2a9c46890661587d29c55, type: 3}
+  - keyIndex: 71
+    keyName: Gs6
+    isBlackKey: 1
+    minX: 0.493711
+    maxX: 0.509932
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 4cef897faf0758a478f57f56e9369935, type: 3}
+  - keyIndex: 72
+    keyName: A6
+    isBlackKey: 0
+    minX: 0.501084
+    maxX: 0.529644
+    minZ: -0.18764
+    maxZ: 0.187636
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: b13a73cd3dcde78449d5b05e12a220dc, type: 3}
+  - keyIndex: 73
+    keyName: As6
+    isBlackKey: 1
+    minX: 0.550061
+    maxX: 0.566282
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 1243a77850d568a418e3636b2d141b62, type: 3}
+  - keyIndex: 74
+    keyName: B6
+    isBlackKey: 0
+    minX: 0.532318
+    maxX: 0.560885
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: b15ad234258299e45a3f8aa3b68bc9df, type: 3}
+  - keyIndex: 75
+    keyName: C7
+    isBlackKey: 0
+    minX: 0.563552
+    maxX: 0.592112
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 1d505cbf7a38f4741b5c6e6c64593a9c, type: 3}
+  - keyIndex: 76
+    keyName: Cs7
+    isBlackKey: 1
+    minX: 0.585369
+    maxX: 0.601589
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: f31dded4e6e385d4ca130c2bf3f46ae3, type: 3}
+  - keyIndex: 77
+    keyName: D7
+    isBlackKey: 0
+    minX: 0.594786
+    maxX: 0.623347
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: d5c7610ffc3527c4bab494768e24a57b, type: 3}
+  - keyIndex: 78
+    keyName: Ds7
+    isBlackKey: 1
+    minX: 0.620679
+    maxX: 0.636899
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 03c5d30e830dfc44d840c84b69bc4b78, type: 3}
+  - keyIndex: 79
+    keyName: E7
+    isBlackKey: 0
+    minX: 0.626021
+    maxX: 0.654581
+    minZ: -0.18764
+    maxZ: 0.187636
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 788ac7595708f3c43905c20f2fd83aea, type: 3}
+  - keyIndex: 80
+    keyName: F7
+    isBlackKey: 0
+    minX: 0.657255
+    maxX: 0.685822
+    minZ: -0.187606
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 3c23293f5db9ed94b880b259b8a8f6e2, type: 3}
+  - keyIndex: 81
+    keyName: Fs7
+    isBlackKey: 1
+    minX: 0.677041
+    maxX: 0.693262
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 9be67068718bd614ead3755b68dc521e, type: 3}
+  - keyIndex: 82
+    keyName: G7
+    isBlackKey: 0
+    minX: 0.688489
+    maxX: 0.71705
+    minZ: -0.187617
+    maxZ: 0.187675
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 383105bf4e4661e47946bc50b6ff25a6, type: 3}
+  - keyIndex: 83
+    keyName: Gs7
+    isBlackKey: 1
+    minX: 0.712351
+    maxX: 0.728569
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: f7d6e81d9e0d4104885143163f50d7f5, type: 3}
+  - keyIndex: 84
+    keyName: A7
+    isBlackKey: 0
+    minX: 0.719724
+    maxX: 0.748284
+    minZ: -0.18764
+    maxZ: 0.187636
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: 1690659c6375144429c1b0650b691bca, type: 3}
+  - keyIndex: 85
+    keyName: As7
+    isBlackKey: 1
+    minX: 0.768628
+    maxX: 0.784849
+    minZ: -0.179991
+    maxZ: 0.120081
+    topY: 0.018828
+    noteClip: {fileID: 8300000, guid: 9d8739f4b46d1b84d8ccf812fee79731, type: 3}
+  - keyIndex: 86
+    keyName: B7
+    isBlackKey: 0
+    minX: 0.750957
+    maxX: 0.779517
+    minZ: -0.187664
+    maxZ: 0.187637
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: dbd5f00f80e8ea54589c7ff23ad0f0c3, type: 3}
+  - keyIndex: 87
+    keyName: C8
+    isBlackKey: 0
+    minX: 0.78219
+    maxX: 0.810752
+    minZ: -0.187675
+    maxZ: 0.187651
+    topY: -0.000002
+    noteClip: {fileID: 8300000, guid: a8cee645940c79446b99eab4be1194f8, type: 3}
