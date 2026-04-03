@@ -8,9 +8,15 @@ public class PianoSettings : ScriptableObject
     public float marginZ = 0.002f;
 
     [Header("Depth")]
-    public float pressDepth = 0.003f;
-    public float releaseDepth = 0.001f;
+    public float pressDepth = 0.005f;
+    public float releaseDepth = 0.0015f;
     public float maxDepth = 0.02f;
+
+    [Header("Debounce")]
+    public int releaseFramesRequired = 2;   // 2~3 추천
+    public float repressCooldown = 0.08f;   // 80ms
+    public float holdMarginX = 0.004f;      // hold 중엔 범위 조금 넓게
+    public float holdMarginZ = 0.004f;
 
     [Header("Velocity -> Volume")]
     public float minVelocityForSound = 0.02f;

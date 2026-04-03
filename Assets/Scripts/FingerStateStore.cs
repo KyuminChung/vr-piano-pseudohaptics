@@ -17,10 +17,10 @@ public class FingerStateStore : MonoBehaviour
         EnsureInitialized();
     }
 
-    private void OnValidate()
-    {
-        EnsureInitialized();
-    }
+    //private void OnValidate()
+    //{
+    //    EnsureInitialized();
+    //}
 
     private void EnsureInitialized()
     {
