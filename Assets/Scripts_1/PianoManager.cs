@@ -17,7 +17,7 @@ public class PianoManager : MonoBehaviour
     [SerializeField] private PianoSettings settings;
     [SerializeField] private PianoLayoutConfig layoutConfig;
     [SerializeField] private AudioSource pianoAudioSource;
-
+    [SerializeField] private PianoKeyVisual[] keyVisuals;
     private KeyRuntime[] runtimes;
 
     private void Awake()
@@ -217,6 +217,10 @@ public class PianoManager : MonoBehaviour
 
     private void PlayKey(int keyIndex)
     {
+        if(keyVisuals != null&& keyIndex >= 0 && keyIndex < keyVisuals.Length && keyVisuals[keyIndex] != null)
+        {
+            keyVisuals[keyIndex].SetPressed(true);
+        }
         if (pianoAudioSource == null)
         {
             Debug.LogWarning("pianoAudioSource가 비어있습니다.");
@@ -231,6 +235,10 @@ public class PianoManager : MonoBehaviour
     }
     private void ReleaseKey(int keyIndex)
     {
+        if (keyVisuals != null && keyIndex >= 0 && keyIndex < keyVisuals.Length && keyVisuals[keyIndex] != null)
+        {
+            keyVisuals[keyIndex].SetPressed(false);
+        }
         runtimes[keyIndex].isPressed = false;
         runtimes[keyIndex].ownerFingerIndex = -1;
         runtimes[keyIndex].releaseCandidateFrames = 0;
