@@ -9,18 +9,25 @@ public class VRKeyInputJudge : MonoBehaviour
     public VRPianoManager pianoManager;
 
     [Header("Input Mode")]
-    public bool singleKeyMode = true;
+    [Tooltip("켜면 전체에서 건반 하나만 눌림. 끄면 손가락별 다중 입력.")]
+    public bool singleKeyMode = false;
+
+    [Header("Arming")]
+    [Tooltip("켜면 손가락을 한 번 표면에서 들어올려야 Press 가능")]
+    public bool requireLiftBeforePress = true;
 
     [Header("Debug")]
     public bool logPress = true;
     public bool logRelease = true;
     public bool logCandidate = false;
+    public bool logArming = false;
 
     private VRKeyData[] _keyData;
     private VRKeyState[] _keyState;
     private bool _initialized = false;
 
     private List<VelocitySample>[] _velocityHistory;
+    private bool[] _fingerArmed;
 
     private struct VelocitySample
     {
@@ -38,14 +45,14 @@ public class VRKeyInputJudge : MonoBehaviour
     {
         public int fingerId;
         public int keyIdx;
-        public float score;
+        public float centerScore;
         public float impactSpeed;
 
-        public KeyCandidate(int fingerId, int keyIdx, float score, float impactSpeed)
+        public KeyCandidate(int fingerId, int keyIdx, float centerScore, float impactSpeed)
         {
             this.fingerId = fingerId;
             this.keyIdx = keyIdx;
-            this.score = score;
+            this.centerScore = centerScore;
             this.impactSpeed = impactSpeed;
         }
     }
@@ -95,6 +102,13 @@ public class VRKeyInputJudge : MonoBehaviour
             _velocityHistory[i] = new List<VelocitySample>();
         }
 
+        _fingerArmed = new bool[10];
+
+        for (int i = 0; i < 10; i++)
+        {
+            _fingerArmed[i] = !requireLiftBeforePress;
+        }
+
         _initialized = true;
 
         Debug.Log("[VRKeyInputJudge] Initialize 완료");
@@ -107,6 +121,7 @@ public class VRKeyInputJudge : MonoBehaviour
         if (handTracker == null) return;
 
         UpdatePreContactVelocityHistory();
+        UpdateFingerArming();
 
         if (singleKeyMode)
         {
@@ -114,11 +129,16 @@ public class VRKeyInputJudge : MonoBehaviour
         }
         else
         {
-            JudgeMultiFingerMode();
+            JudgePerFingerMultiKeyMode();
         }
 
+        UpdatePressedKeyAmounts();
         ResetReleasedStates();
     }
+
+    // ─────────────────────────────────────────────
+    // Pre-contact velocity
+    // ─────────────────────────────────────────────
 
     private void UpdatePreContactVelocityHistory()
     {
@@ -167,6 +187,111 @@ public class VRKeyInputJudge : MonoBehaviour
         return maxSpeed;
     }
 
+    // ─────────────────────────────────────────────
+    // Finger arming
+    // ─────────────────────────────────────────────
+
+    private void UpdateFingerArming()
+    {
+        if (!requireLiftBeforePress) return;
+        if (_fingerArmed == null) return;
+
+        for (int f = 0; f < 10; f++)
+        {
+            VRFingerData finger = handTracker.FingerData[f];
+
+            if (!finger.isTracked)
+            {
+                continue;
+            }
+
+            // 이미 누르고 있는 손가락은 arming 갱신 안 함
+            if (finger.boundKeyIndex >= 0)
+            {
+                continue;
+            }
+
+            if (_fingerArmed[f])
+            {
+                continue;
+            }
+
+            if (IsFingerLiftedEnoughToArm(finger))
+            {
+                _fingerArmed[f] = true;
+
+                if (logArming)
+                {
+                    Debug.Log($"[FingerArmed] finger={f}");
+                }
+            }
+        }
+    }
+
+    private bool IsFingerLiftedEnoughToArm(VRFingerData finger)
+    {
+        float lx = finger.localPos.x;
+        float lz = finger.localPos.z;
+        float ly = finger.localPos.y;
+
+        bool overAnyKey = false;
+        float highestSurfaceY = float.MinValue;
+
+        for (int k = 0; k < 88; k++)
+        {
+            VRKeyData data = _keyData[k];
+
+            if (data == null) continue;
+
+            if (data.IsFingerOver(lx, lz))
+            {
+                overAnyKey = true;
+
+                if (data.restTopLocalY > highestSurfaceY)
+                {
+                    highestSurfaceY = data.restTopLocalY;
+                }
+            }
+        }
+
+        // 건반 영역 밖으로 나갔으면 다시 press 준비 가능
+        if (!overAnyKey)
+        {
+            return true;
+        }
+
+        // 건반 위에 있다면 표면보다 충분히 위로 올라가야 armed
+        return ly >= highestSurfaceY + VRPianoConst.PressArmHeight;
+    }
+
+    private bool IsFingerArmed(VRFingerData finger)
+    {
+        if (!requireLiftBeforePress) return true;
+
+        int fid = finger.fingerId;
+
+        if (fid < 0 || fid >= 10) return false;
+        if (_fingerArmed == null) return false;
+
+        return _fingerArmed[fid];
+    }
+
+    private void DisarmFinger(VRFingerData finger)
+    {
+        if (finger == null) return;
+        if (_fingerArmed == null) return;
+
+        int fid = finger.fingerId;
+
+        if (fid < 0 || fid >= _fingerArmed.Length) return;
+
+        _fingerArmed[fid] = false;
+    }
+
+    // ─────────────────────────────────────────────
+    // Single key mode
+    // ─────────────────────────────────────────────
+
     private void JudgeSingleKeyMode()
     {
         int pressedKey = GetCurrentlyPressedKey();
@@ -179,46 +304,10 @@ public class VRKeyInputJudge : MonoBehaviour
 
         KeyCandidate candidate;
 
-        if (TryFindBestCandidate(out candidate))
+        if (TryFindBestCandidateGlobal(out candidate))
         {
             VRFingerData finger = handTracker.FingerData[candidate.fingerId];
-
-            if (logCandidate)
-            {
-                Debug.Log(
-                    $"[Candidate] key={candidate.keyIdx} finger={candidate.fingerId} " +
-                    $"score={candidate.score:F3} impact={candidate.impactSpeed:F3}"
-                );
-            }
-
             TryPressWithImpact(finger, candidate.keyIdx, candidate.impactSpeed);
-        }
-    }
-
-    private void JudgeMultiFingerMode()
-    {
-        for (int f = 0; f < 10; f++)
-        {
-            VRFingerData finger = handTracker.FingerData[f];
-
-            if (!finger.isTracked)
-            {
-                HandleOcclusionTimeout(finger);
-                continue;
-            }
-
-            if (finger.boundKeyIndex >= 0 && finger.boundKeyIndex < 88)
-            {
-                ContinuePressedKey(finger.boundKeyIndex);
-                continue;
-            }
-
-            KeyCandidate candidate;
-
-            if (TryFindBestCandidateForFinger(f, out candidate))
-            {
-                TryPressWithImpact(finger, candidate.keyIdx, candidate.impactSpeed);
-            }
         }
     }
 
@@ -235,96 +324,112 @@ public class VRKeyInputJudge : MonoBehaviour
         return -1;
     }
 
-    private void ContinuePressedKey(int keyIdx)
+    // ─────────────────────────────────────────────
+    // Multi key mode
+    // 손가락별 독립 입력 + 같은 건반 다중 손가락 허용
+    // ─────────────────────────────────────────────
+
+    private void JudgePerFingerMultiKeyMode()
     {
-        if (keyIdx < 0 || keyIdx >= 88) return;
-
-        VRKeyState state = _keyState[keyIdx];
-        VRKeyData data = _keyData[keyIdx];
-
-        if (state == null || data == null) return;
-
-        int fingerId = state.occupiedByFinger;
-
-        if (fingerId < 0 || fingerId >= 10)
+        // 1. 이미 누르고 있는 손가락은 자기 건반만 유지/해제 판정
+        for (int f = 0; f < 10; f++)
         {
-            ForceRelease(keyIdx, state, null, "InvalidFinger");
-            return;
+            VRFingerData finger = handTracker.FingerData[f];
+
+            if (finger.boundKeyIndex >= 0 && finger.boundKeyIndex < 88)
+            {
+                if (!finger.isTracked)
+                {
+                    HandleOcclusionTimeout(finger);
+                    continue;
+                }
+
+                ContinueBoundFinger(finger);
+            }
         }
 
-        VRFingerData finger = handTracker.FingerData[fingerId];
-
-        if (!finger.isTracked)
+        // 2. 아직 건반을 점유하지 않은 손가락은 새 후보 탐색
+        for (int f = 0; f < 10; f++)
         {
-            HandleOcclusionTimeout(finger);
-            return;
-        }
+            VRFingerData finger = handTracker.FingerData[f];
 
-        JudgePressedKey(finger, data, state, keyIdx);
-    }
+            if (!finger.isTracked)
+            {
+                continue;
+            }
 
-    private void JudgePressedKey(
-        VRFingerData finger,
-        VRKeyData data,
-        VRKeyState state,
-        int keyIdx)
-    {
-        float lx = finger.localPos.x;
-        float lz = finger.localPos.z;
-        float ly = finger.localPos.y;
+            if (finger.boundKeyIndex >= 0)
+            {
+                continue;
+            }
 
-        bool stillOverZone = data.IsFingerOver(lx, lz);
+            if (!IsFingerArmed(finger))
+            {
+                continue;
+            }
 
-        if (!stillOverZone)
-        {
-            ForceRelease(keyIdx, state, finger, "ZoneExit");
-            return;
-        }
+            KeyCandidate candidate;
 
-        // 손가락이 표면 근처에 계속 있으면 pseudo-haptic으로 max까지 진행
-        bool stillHolding = ly <= data.restTopLocalY + VRPianoConst.HoldTolerance;
-
-        if (stillHolding)
-        {
-            state.pressAmount = Mathf.MoveTowards(
-                state.pressAmount,
-                1f,
-                state.pressFillSpeed * Time.deltaTime
-            );
-
-            state.targetAngle = GetMaxAngle(data) * state.pressAmount;
-            return;
-        }
-
-        // 확실히 위로 올라오면 Release
-        bool shouldRelease = ly >= data.restTopLocalY + VRPianoConst.ReleaseMargin;
-
-        if (shouldRelease)
-        {
-            ForceRelease(keyIdx, state, finger, "Release");
+            if (TryFindBestCandidateForFinger(f, out candidate))
+            {
+                TryPressWithImpact(finger, candidate.keyIdx, candidate.impactSpeed);
+            }
         }
     }
 
-    private bool TryFindBestCandidate(out KeyCandidate bestCandidate)
+    // ─────────────────────────────────────────────
+    // Candidate search
+    // ─────────────────────────────────────────────
+
+    private bool TryFindBestCandidateGlobal(out KeyCandidate bestCandidate)
     {
         bestCandidate = new KeyCandidate(-1, -1, float.MinValue, 0f);
 
-        // 1순위: 검은 건반 후보 전체
-        bool foundBlack = TryFindBestCandidateByKeyType(true, out bestCandidate);
+        bool foundBlack = TryFindBestCandidateByKeyTypeGlobal(true, out bestCandidate);
 
         if (foundBlack)
         {
             return true;
         }
 
-        // 2순위: 흰 건반 후보 전체
-        return TryFindBestCandidateByKeyType(false, out bestCandidate);
+        return TryFindBestCandidateByKeyTypeGlobal(false, out bestCandidate);
+    }
+
+    private bool TryFindBestCandidateByKeyTypeGlobal(bool blackOnly, out KeyCandidate bestCandidate)
+    {
+        bestCandidate = new KeyCandidate(-1, -1, float.MinValue, 0f);
+        bool found = false;
+
+        for (int f = 0; f < 10; f++)
+        {
+            VRFingerData finger = handTracker.FingerData[f];
+
+            if (!finger.isTracked) continue;
+            if (finger.boundKeyIndex >= 0) continue;
+            if (!IsFingerArmed(finger)) continue;
+
+            KeyCandidate candidate;
+
+            if (!TryFindBestCandidateByKeyTypeForFinger(f, blackOnly, out candidate))
+            {
+                continue;
+            }
+
+            if (!found || candidate.centerScore > bestCandidate.centerScore)
+            {
+                bestCandidate = candidate;
+                found = true;
+            }
+        }
+
+        return found;
     }
 
     private bool TryFindBestCandidateForFinger(int fingerId, out KeyCandidate bestCandidate)
     {
         bestCandidate = new KeyCandidate(-1, -1, float.MinValue, 0f);
 
+        // 손가락 하나 기준에서도 검은 건반 우선
         bool foundBlack = TryFindBestCandidateByKeyTypeForFinger(fingerId, true, out bestCandidate);
 
         if (foundBlack)
@@ -335,32 +440,6 @@ public class VRKeyInputJudge : MonoBehaviour
         return TryFindBestCandidateByKeyTypeForFinger(fingerId, false, out bestCandidate);
     }
 
-    private bool TryFindBestCandidateByKeyType(bool blackOnly, out KeyCandidate bestCandidate)
-    {
-        bestCandidate = new KeyCandidate(-1, -1, float.MinValue, 0f);
-        bool found = false;
-
-        for (int f = 0; f < 10; f++)
-        {
-            VRFingerData finger = handTracker.FingerData[f];
-
-            if (!finger.isTracked) continue;
-
-            KeyCandidate candidate;
-
-            if (!TryFindBestCandidateByKeyTypeForFinger(f, blackOnly, out candidate))
-                continue;
-
-            if (!found || candidate.score > bestCandidate.score)
-            {
-                bestCandidate = candidate;
-                found = true;
-            }
-        }
-
-        return found;
-    }
-
     private bool TryFindBestCandidateByKeyTypeForFinger(
         int fingerId,
         bool blackOnly,
@@ -369,27 +448,30 @@ public class VRKeyInputJudge : MonoBehaviour
         bestCandidate = new KeyCandidate(-1, -1, float.MinValue, 0f);
         bool found = false;
 
+        if (fingerId < 0 || fingerId >= 10) return false;
+
         VRFingerData finger = handTracker.FingerData[fingerId];
 
+        if (!finger.isTracked) return false;
+        if (!IsFingerArmed(finger)) return false;
+
         float impactSpeed = GetPreContactImpactSpeed(fingerId);
+
+        if (impactSpeed < VRPianoConst.MinImpactSpeedToPress)
+        {
+            return false;
+        }
 
         for (int k = 0; k < 88; k++)
         {
             VRKeyData data = _keyData[k];
-            VRKeyState state = _keyState[k];
 
-            if (data == null || state == null) continue;
+            if (data == null) continue;
             if (data.isBlackKey != blackOnly) continue;
 
-            if (state.occupiedByFinger != -1 &&
-                state.occupiedByFinger != finger.fingerId)
-            {
-                continue;
-            }
+            float centerScore;
 
-            float score;
-
-            if (!TryScoreCandidate(finger, data, impactSpeed, out score))
+            if (!TryScoreCandidateSimple(finger, data, out centerScore))
             {
                 continue;
             }
@@ -397,11 +479,11 @@ public class VRKeyInputJudge : MonoBehaviour
             KeyCandidate candidate = new KeyCandidate(
                 finger.fingerId,
                 k,
-                score,
+                centerScore,
                 impactSpeed
             );
 
-            if (!found || candidate.score > bestCandidate.score)
+            if (!found || candidate.centerScore > bestCandidate.centerScore)
             {
                 bestCandidate = candidate;
                 found = true;
@@ -411,49 +493,28 @@ public class VRKeyInputJudge : MonoBehaviour
         return found;
     }
 
-    private bool TryScoreCandidate(
+    private bool TryScoreCandidateSimple(
         VRFingerData finger,
         VRKeyData data,
-        float impactSpeed,
-        out float score)
+        out float centerScore)
     {
-        score = 0f;
+        centerScore = 0f;
 
         float lx = finger.localPos.x;
         float lz = finger.localPos.z;
         float ly = finger.localPos.y;
 
-        // X/Z Zone 안에 있어야 후보
         if (!data.IsFingerOver(lx, lz))
         {
             return false;
         }
 
-        // 실제 Press 시작은 표면 근처에 닿았을 때만
         if (ly > data.restTopLocalY + VRPianoConst.ContactTolerance)
         {
             return false;
         }
 
-        float depthScore = Mathf.Clamp01(
-            1f - Mathf.Abs(ly - data.restTopLocalY) / VRPianoConst.ProximityHeight
-        );
-
-        float velocityScore = Mathf.Clamp01(
-            impactSpeed / VRPianoConst.ImpactSpeedForMax
-        );
-
-        float centerScore = GetZoneCenterScore(data, lx, lz);
-
-        float blackBonus = data.isBlackKey
-            ? VRPianoConst.CandidateBlackBonus
-            : 0f;
-
-        score =
-            depthScore * VRPianoConst.CandidateDepthWeight +
-            velocityScore * VRPianoConst.CandidateVelocityWeight +
-            centerScore * VRPianoConst.CandidateCenterWeight +
-            blackBonus;
+        centerScore = GetZoneCenterScore(data, lx, lz);
 
         return true;
     }
@@ -507,10 +568,15 @@ public class VRKeyInputJudge : MonoBehaviour
         float nx = Mathf.Abs(lx - cx) / halfX;
         float nz = Mathf.Abs(lz - cz) / halfZ;
 
-        float normalizedDistance = Mathf.Clamp01(Mathf.Sqrt(nx * nx + nz * nz) * 0.707f);
+        float normalizedDistance =
+            Mathf.Clamp01(Mathf.Sqrt(nx * nx + nz * nz) * 0.707f);
 
         return 1f - normalizedDistance;
     }
+
+    // ─────────────────────────────────────────────
+    // Press / Hold / Release
+    // ─────────────────────────────────────────────
 
     private void TryPressWithImpact(
         VRFingerData finger,
@@ -524,11 +590,21 @@ public class VRKeyInputJudge : MonoBehaviour
             return;
         }
 
+        if (!IsFingerArmed(finger))
+        {
+            return;
+        }
+
+        if (impactSpeed < VRPianoConst.MinImpactSpeedToPress)
+        {
+            return;
+        }
+
         VRKeyData data = _keyData[keyIdx];
         VRKeyState state = _keyState[keyIdx];
 
         if (data == null || state == null) return;
-        if (state.occupiedByFinger != -1) return;
+        if (finger.boundKeyIndex >= 0) return;
 
         float ly = finger.localPos.y;
 
@@ -537,81 +613,233 @@ public class VRKeyInputJudge : MonoBehaviour
             return;
         }
 
+        bool wasIdle = state.pressedFingerCount == 0 ||
+                       state.pressState != VRKeyPressState.Pressed;
+
         float impact01 = Mathf.Clamp01(
             impactSpeed / VRPianoConst.ImpactSpeedForMax
         );
 
-        state.pressState = VRKeyPressState.Pressed;
-        state.occupiedByFinger = finger.fingerId;
-        state.occlusionHoldStart = 0f;
-
-        state.impactSpeed = impactSpeed;
-        state.contactStartTime = Time.time;
-
-        state.pressAmount = Mathf.Lerp(
+        float initialPress = Mathf.Lerp(
             VRPianoConst.InitialPressMin,
             VRPianoConst.InitialPressMax,
             impact01
         );
 
-        state.pressFillSpeed = Mathf.Lerp(
+        float fillSpeed = Mathf.Lerp(
             VRPianoConst.FillSpeedMin,
             VRPianoConst.FillSpeedMax,
             impact01
         );
 
+        state.pressState = VRKeyPressState.Pressed;
+        state.AddFinger(finger.fingerId);
+
+        state.occlusionHoldStartByFinger[finger.fingerId] = 0f;
+        state.impactSpeed = Mathf.Max(state.impactSpeed, impactSpeed);
+        state.contactStartTime = Time.time;
+
+        // 이미 눌린 건반에 다른 손가락이 추가로 닿으면
+        // 소리는 다시 안 나지만, 더 강한 입력이면 눌림 속도/깊이는 보강
+        state.pressAmount = Mathf.Max(state.pressAmount, initialPress);
+        state.pressFillSpeed = Mathf.Max(state.pressFillSpeed, fillSpeed);
         state.targetAngle = GetMaxAngle(data) * state.pressAmount;
 
         finger.boundKeyIndex = keyIdx;
-
-        float noteVelocity = impact01;
+        DisarmFinger(finger);
 
         if (logPress)
         {
             Debug.Log(
-                $"[PRESS] key={keyIdx} finger={finger.fingerId} black={data.isBlackKey} " +
-                $"impact={impactSpeed:F3} impact01={impact01:F2} " +
+                $"[PRESS-FINGER] key={keyIdx} finger={finger.fingerId} black={data.isBlackKey} " +
+                $"wasIdle={wasIdle} impact={impactSpeed:F3} impact01={impact01:F2} " +
                 $"pressAmount={state.pressAmount:F2} fillSpeed={state.pressFillSpeed:F2} " +
-                $"targetAngle={state.targetAngle:F2}"
+                $"fingerCount={state.pressedFingerCount}"
             );
         }
 
-        pianoManager.OnPress(keyIdx, noteVelocity);
+        // 오디오는 Idle → Pressed 순간에만 Play
+        if (wasIdle)
+        {
+            pianoManager.OnPress(keyIdx, impact01);
+        }
     }
 
-    private float GetMaxAngle(VRKeyData data)
+    private void ContinuePressedKey(int keyIdx)
     {
-        return Mathf.Atan(data.TanThetaMax) * Mathf.Rad2Deg;
+        if (keyIdx < 0 || keyIdx >= 88) return;
+
+        VRKeyState state = _keyState[keyIdx];
+
+        if (state == null) return;
+
+        int fingerId = state.FindFirstPressingFinger();
+
+        if (fingerId < 0)
+        {
+            ForceReleaseKey(keyIdx, state, "NoFinger");
+            return;
+        }
+
+        VRFingerData finger = handTracker.FingerData[fingerId];
+
+        if (!finger.isTracked)
+        {
+            HandleOcclusionTimeout(finger);
+            return;
+        }
+
+        ContinueBoundFinger(finger);
     }
 
-    private void ForceRelease(
+    private void ContinueBoundFinger(VRFingerData finger)
+    {
+        int keyIdx = finger.boundKeyIndex;
+
+        if (keyIdx < 0 || keyIdx >= 88) return;
+
+        VRKeyData data = _keyData[keyIdx];
+        VRKeyState state = _keyState[keyIdx];
+
+        if (data == null || state == null) return;
+
+        if (!state.IsFingerPressing(finger.fingerId))
+        {
+            finger.boundKeyIndex = -1;
+            DisarmFinger(finger);
+            return;
+        }
+
+        JudgePressedFinger(finger, data, state, keyIdx);
+    }
+
+    private void JudgePressedFinger(
+        VRFingerData finger,
+        VRKeyData data,
+        VRKeyState state,
+        int keyIdx)
+    {
+        int fid = finger.fingerId;
+
+        state.ClearOcclusion(fid);
+
+        float lx = finger.localPos.x;
+        float lz = finger.localPos.z;
+        float ly = finger.localPos.y;
+
+        bool stillOverZone = data.IsFingerOver(lx, lz);
+
+        if (!stillOverZone)
+        {
+            ReleaseFingerFromKey(keyIdx, state, finger, "ZoneExit");
+            return;
+        }
+
+        bool stillHolding = ly <= data.restTopLocalY + VRPianoConst.HoldTolerance;
+
+        if (stillHolding)
+        {
+            return;
+        }
+
+        bool shouldRelease = ly >= data.restTopLocalY + VRPianoConst.ReleaseMargin;
+
+        if (shouldRelease)
+        {
+            ReleaseFingerFromKey(keyIdx, state, finger, "Release");
+        }
+    }
+
+    private void UpdatePressedKeyAmounts()
+    {
+        for (int k = 0; k < 88; k++)
+        {
+            VRKeyState state = _keyState[k];
+            VRKeyData data = _keyData[k];
+
+            if (state == null || data == null) continue;
+
+            if (state.pressState != VRKeyPressState.Pressed)
+            {
+                continue;
+            }
+
+            if (state.pressedFingerCount <= 0)
+            {
+                ForceReleaseKey(k, state, "NoFinger");
+                continue;
+            }
+
+            state.pressAmount = Mathf.MoveTowards(
+                state.pressAmount,
+                1f,
+                state.pressFillSpeed * Time.deltaTime
+            );
+
+            state.targetAngle = GetMaxAngle(data) * state.pressAmount;
+        }
+    }
+
+    private void ReleaseFingerFromKey(
         int keyIdx,
         VRKeyState state,
         VRFingerData finger,
+        string reason)
+    {
+        if (state == null || finger == null) return;
+
+        int fid = finger.fingerId;
+
+        state.RemoveFinger(fid);
+        finger.boundKeyIndex = -1;
+        DisarmFinger(finger);
+
+        if (logRelease)
+        {
+            Debug.Log(
+                $"[ReleaseFinger] key={keyIdx} finger={fid} reason={reason} " +
+                $"remaining={state.pressedFingerCount}"
+            );
+        }
+
+        // 아직 다른 손가락이 같은 건반을 누르고 있으면 건반 유지
+        if (state.pressedFingerCount > 0)
+        {
+            return;
+        }
+
+        ForceReleaseKey(keyIdx, state, "LastFingerReleased");
+    }
+
+    private void ForceReleaseKey(
+        int keyIdx,
+        VRKeyState state,
         string reason)
     {
         if (state == null) return;
 
         state.pressState = VRKeyPressState.Released;
         state.occupiedByFinger = -1;
-        state.occlusionHoldStart = 0f;
-
         state.targetAngle = 0f;
         state.pressAmount = 0f;
         state.pressFillSpeed = 0f;
         state.impactSpeed = 0f;
         state.contactStartTime = 0f;
+        state.pressedFingerCount = 0;
 
-        if (finger != null)
+        state.EnsureArrays();
+
+        for (int i = 0; i < 10; i++)
         {
-            finger.boundKeyIndex = -1;
+            state.pressingFingers[i] = false;
+            state.occlusionHoldStartByFinger[i] = 0f;
         }
 
         pianoManager?.OnRelease(keyIdx);
 
         if (logRelease)
         {
-            Debug.Log($"[Release] key={keyIdx} reason={reason}");
+            Debug.Log($"[ReleaseKey] key={keyIdx} reason={reason}");
         }
     }
 
@@ -619,20 +847,27 @@ public class VRKeyInputJudge : MonoBehaviour
     {
         if (finger.boundKeyIndex < 0 || finger.boundKeyIndex >= 88) return;
 
-        VRKeyState state = _keyState[finger.boundKeyIndex];
+        int keyIdx = finger.boundKeyIndex;
+        VRKeyState state = _keyState[keyIdx];
 
         if (state == null) return;
         if (state.pressState != VRKeyPressState.Pressed) return;
 
-        if (state.occlusionHoldStart <= 0f)
-        {
-            state.occlusionHoldStart = Time.time;
-        }
+        int fid = finger.fingerId;
 
-        if (state.IsOcclusionTimedOut())
+        if (!state.IsFingerPressing(fid)) return;
+
+        state.StartOcclusionIfNeeded(fid);
+
+        if (state.IsOcclusionTimedOut(fid))
         {
-            ForceRelease(finger.boundKeyIndex, state, finger, "OcclusionTimeout");
+            ReleaseFingerFromKey(keyIdx, state, finger, "OcclusionTimeout");
         }
+    }
+
+    private float GetMaxAngle(VRKeyData data)
+    {
+        return Mathf.Atan(data.TanThetaMax) * Mathf.Rad2Deg;
     }
 
     private void ResetReleasedStates()
