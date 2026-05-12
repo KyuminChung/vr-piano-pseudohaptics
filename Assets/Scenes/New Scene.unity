@@ -1970,7 +1970,7 @@ MonoBehaviour:
   - {fileID: 0}
   minVolume: 0.05
   maxVolume: 1
-  velocityCurve: 1.8
+  velocityCurve: 2.4
   releaseFadeTime: 0.12
 --- !u!4 &1797286336
 Transform:
