@@ -46,14 +46,30 @@ public class VRKeyInputJudge : MonoBehaviour
         public int fingerId;
         public int keyIdx;
         public float centerScore;
-        public float impactSpeed;
 
-        public KeyCandidate(int fingerId, int keyIdx, float centerScore, float impactSpeed)
+        // rawImpactSpeed: 손가락에서 직접 계산한 접촉 직전 하강 속도
+        // effectiveImpactSpeed: 누른 위치를 반영해 보정한 최종 속도
+        public float rawImpactSpeed;
+        public float effectiveImpactSpeed;
+        public float contactPosition01;
+        public float positionImpactFactor;
+
+        public KeyCandidate(
+            int fingerId,
+            int keyIdx,
+            float centerScore,
+            float rawImpactSpeed,
+            float effectiveImpactSpeed,
+            float contactPosition01,
+            float positionImpactFactor)
         {
             this.fingerId = fingerId;
             this.keyIdx = keyIdx;
             this.centerScore = centerScore;
-            this.impactSpeed = impactSpeed;
+            this.rawImpactSpeed = rawImpactSpeed;
+            this.effectiveImpactSpeed = effectiveImpactSpeed;
+            this.contactPosition01 = contactPosition01;
+            this.positionImpactFactor = positionImpactFactor;
         }
     }
 
@@ -307,7 +323,14 @@ public class VRKeyInputJudge : MonoBehaviour
         if (TryFindBestCandidateGlobal(out candidate))
         {
             VRFingerData finger = handTracker.FingerData[candidate.fingerId];
-            TryPressWithImpact(finger, candidate.keyIdx, candidate.impactSpeed);
+            TryPressWithImpact(
+                finger,
+                candidate.keyIdx,
+                candidate.rawImpactSpeed,
+                candidate.effectiveImpactSpeed,
+                candidate.contactPosition01,
+                candidate.positionImpactFactor
+            );
         }
     }
 
@@ -372,7 +395,14 @@ public class VRKeyInputJudge : MonoBehaviour
 
             if (TryFindBestCandidateForFinger(f, out candidate))
             {
-                TryPressWithImpact(finger, candidate.keyIdx, candidate.impactSpeed);
+                TryPressWithImpact(
+                finger,
+                candidate.keyIdx,
+                candidate.rawImpactSpeed,
+                candidate.effectiveImpactSpeed,
+                candidate.contactPosition01,
+                candidate.positionImpactFactor
+            );
             }
         }
     }
@@ -383,7 +413,7 @@ public class VRKeyInputJudge : MonoBehaviour
 
     private bool TryFindBestCandidateGlobal(out KeyCandidate bestCandidate)
     {
-        bestCandidate = new KeyCandidate(-1, -1, float.MinValue, 0f);
+        bestCandidate = new KeyCandidate(-1, -1, float.MinValue, 0f, 0f, 1f, 1f);
 
         bool foundBlack = TryFindBestCandidateByKeyTypeGlobal(true, out bestCandidate);
 
@@ -397,7 +427,7 @@ public class VRKeyInputJudge : MonoBehaviour
 
     private bool TryFindBestCandidateByKeyTypeGlobal(bool blackOnly, out KeyCandidate bestCandidate)
     {
-        bestCandidate = new KeyCandidate(-1, -1, float.MinValue, 0f);
+        bestCandidate = new KeyCandidate(-1, -1, float.MinValue, 0f, 0f, 1f, 1f);
         bool found = false;
 
         for (int f = 0; f < 10; f++)
@@ -427,7 +457,7 @@ public class VRKeyInputJudge : MonoBehaviour
 
     private bool TryFindBestCandidateForFinger(int fingerId, out KeyCandidate bestCandidate)
     {
-        bestCandidate = new KeyCandidate(-1, -1, float.MinValue, 0f);
+        bestCandidate = new KeyCandidate(-1, -1, float.MinValue, 0f, 0f, 1f, 1f);
 
         // 손가락 하나 기준에서도 검은 건반 우선
         bool foundBlack = TryFindBestCandidateByKeyTypeForFinger(fingerId, true, out bestCandidate);
@@ -445,7 +475,7 @@ public class VRKeyInputJudge : MonoBehaviour
         bool blackOnly,
         out KeyCandidate bestCandidate)
     {
-        bestCandidate = new KeyCandidate(-1, -1, float.MinValue, 0f);
+        bestCandidate = new KeyCandidate(-1, -1, float.MinValue, 0f, 0f, 1f, 1f);
         bool found = false;
 
         if (fingerId < 0 || fingerId >= 10) return false;
@@ -455,12 +485,10 @@ public class VRKeyInputJudge : MonoBehaviour
         if (!finger.isTracked) return false;
         if (!IsFingerArmed(finger)) return false;
 
-        float impactSpeed = GetPreContactImpactSpeed(fingerId);
-
-        if (impactSpeed < VRPianoConst.MinImpactSpeedToPress)
-        {
-            return false;
-        }
+        // 후보 탐색에서는 최소 속도 조건을 보지 않는다.
+        // 손가락이 실제 표면에 닿았다면, 느린 접촉이어도 건반은 살짝 눌려야 한다.
+        // 단, 소리 발생 여부는 TryPressWithImpact 안에서 위치 보정된 impactSpeed로 따로 판단한다.
+        float rawImpactSpeed = GetPreContactImpactSpeed(fingerId);
 
         for (int k = 0; k < 88; k++)
         {
@@ -470,17 +498,32 @@ public class VRKeyInputJudge : MonoBehaviour
             if (data.isBlackKey != blackOnly) continue;
 
             float centerScore;
+            float contactPosition01;
+            float positionImpactFactor;
 
-            if (!TryScoreCandidateSimple(finger, data, out centerScore))
+            if (!TryScoreCandidateSimple(
+                finger,
+                data,
+                out centerScore,
+                out contactPosition01,
+                out positionImpactFactor))
             {
                 continue;
             }
+
+            float effectiveImpactSpeed = GetEffectiveImpactSpeed(
+                rawImpactSpeed,
+                contactPosition01
+            );
 
             KeyCandidate candidate = new KeyCandidate(
                 finger.fingerId,
                 k,
                 centerScore,
-                impactSpeed
+                rawImpactSpeed,
+                effectiveImpactSpeed,
+                contactPosition01,
+                positionImpactFactor
             );
 
             if (!found || candidate.centerScore > bestCandidate.centerScore)
@@ -496,9 +539,13 @@ public class VRKeyInputJudge : MonoBehaviour
     private bool TryScoreCandidateSimple(
         VRFingerData finger,
         VRKeyData data,
-        out float centerScore)
+        out float centerScore,
+        out float contactPosition01,
+        out float positionImpactFactor)
     {
         centerScore = 0f;
+        contactPosition01 = 1f;
+        positionImpactFactor = 1f;
 
         float lx = finger.localPos.x;
         float lz = finger.localPos.z;
@@ -515,8 +562,43 @@ public class VRKeyInputJudge : MonoBehaviour
         }
 
         centerScore = GetZoneCenterScore(data, lx, lz);
+        contactPosition01 = GetContactPosition01(data, lz);
+        positionImpactFactor = GetPositionImpactFactor(contactPosition01);
 
         return true;
+    }
+
+    private float GetContactPosition01(VRKeyData data, float fingerLocalZ)
+    {
+        if (data == null) return 1f;
+        if (data.keyLength <= 0.0001f) return 1f;
+
+        // VRKeyData.GetSurfaceY와 같은 방향을 사용한다.
+        // distFromHinge = 0이면 힌지 근처, 1이면 건반 앞쪽 끝.
+        float distFromHinge = data.hingeLocalZ - fingerLocalZ;
+        return Mathf.Clamp01(distFromHinge / data.keyLength);
+    }
+
+    private float GetPositionImpactFactor(float contactPosition01)
+    {
+        if (!VRPianoConst.UsePositionImpactWeighting)
+        {
+            return 1f;
+        }
+
+        float p = Mathf.Clamp01(contactPosition01);
+        float curvedP = Mathf.Pow(p, Mathf.Max(0.0001f, VRPianoConst.PositionImpactPower));
+
+        return Mathf.Lerp(
+            VRPianoConst.RearImpactMultiplier,
+            VRPianoConst.FrontImpactMultiplier,
+            curvedP
+        );
+    }
+
+    private float GetEffectiveImpactSpeed(float rawImpactSpeed, float contactPosition01)
+    {
+        return rawImpactSpeed * GetPositionImpactFactor(contactPosition01);
     }
 
     private float GetZoneCenterScore(VRKeyData data, float lx, float lz)
@@ -581,7 +663,10 @@ public class VRKeyInputJudge : MonoBehaviour
     private void TryPressWithImpact(
         VRFingerData finger,
         int keyIdx,
-        float impactSpeed)
+        float rawImpactSpeed,
+        float effectiveImpactSpeed,
+        float contactPosition01,
+        float positionImpactFactor)
     {
         if (keyIdx < 0 || keyIdx >= 88) return;
 
@@ -591,11 +676,6 @@ public class VRKeyInputJudge : MonoBehaviour
         }
 
         if (!IsFingerArmed(finger))
-        {
-            return;
-        }
-
-        if (impactSpeed < VRPianoConst.MinImpactSpeedToPress)
         {
             return;
         }
@@ -616,31 +696,41 @@ public class VRKeyInputJudge : MonoBehaviour
         bool wasIdle = state.pressedFingerCount == 0 ||
                        state.pressState != VRKeyPressState.Pressed;
 
+        bool shouldSound = effectiveImpactSpeed >= VRPianoConst.MinImpactSpeedToPress;
+
         float impact01 = Mathf.Clamp01(
-            impactSpeed / VRPianoConst.ImpactSpeedForMax
+            effectiveImpactSpeed / VRPianoConst.ImpactSpeedForMax
         );
 
-        float initialPress = Mathf.Lerp(
-            VRPianoConst.InitialPressMin,
-            VRPianoConst.InitialPressMax,
-            impact01
-        );
+        float initialPress = shouldSound
+            ? Mathf.Lerp(
+                VRPianoConst.InitialPressMin,
+                VRPianoConst.InitialPressMax,
+                impact01
+            )
+            : VRPianoConst.TouchPressMin;
 
-        float fillSpeed = Mathf.Lerp(
-            VRPianoConst.FillSpeedMin,
-            VRPianoConst.FillSpeedMax,
-            impact01
-        );
+        float fillSpeed = shouldSound
+            ? Mathf.Lerp(
+                VRPianoConst.FillSpeedMin,
+                VRPianoConst.FillSpeedMax,
+                impact01
+            )
+            : 0f;
 
         state.pressState = VRKeyPressState.Pressed;
         state.AddFinger(finger.fingerId);
 
         state.occlusionHoldStartByFinger[finger.fingerId] = 0f;
-        state.impactSpeed = Mathf.Max(state.impactSpeed, impactSpeed);
+        state.rawImpactSpeed = Mathf.Max(state.rawImpactSpeed, rawImpactSpeed);
+        state.effectiveImpactSpeed = Mathf.Max(state.effectiveImpactSpeed, effectiveImpactSpeed);
+        state.impactSpeed = Mathf.Max(state.impactSpeed, effectiveImpactSpeed);
+        state.contactPosition01 = contactPosition01;
+        state.positionImpactFactor = positionImpactFactor;
         state.contactStartTime = Time.time;
 
-        // 이미 눌린 건반에 다른 손가락이 추가로 닿으면
-        // 소리는 다시 안 나지만, 더 강한 입력이면 눌림 속도/깊이는 보강
+        // 닿으면 무조건 최소 눌림을 보장한다.
+        // 소리가 안 나는 느린 접촉이어도 TouchPressMin만큼은 내려간다.
         state.pressAmount = Mathf.Max(state.pressAmount, initialPress);
         state.pressFillSpeed = Mathf.Max(state.pressFillSpeed, fillSpeed);
         state.targetAngle = GetMaxAngle(data) * state.pressAmount;
@@ -648,20 +738,27 @@ public class VRKeyInputJudge : MonoBehaviour
         finger.boundKeyIndex = keyIdx;
         DisarmFinger(finger);
 
+        // 오디오는 접촉 순간 속도가 충분할 때만 1회 발생.
+        // 이미 누른 건반에 다른 손가락이 추가로 닿아도, hasSounded가 true면 중복 재생하지 않는다.
+        bool playedSound = false;
+
+        if (shouldSound && !state.hasSounded)
+        {
+            state.hasSounded = true;
+            pianoManager.OnPress(keyIdx, impact01);
+            playedSound = true;
+        }
+
         if (logPress)
         {
             Debug.Log(
-                $"[PRESS-FINGER] key={keyIdx} finger={finger.fingerId} black={data.isBlackKey} " +
-                $"wasIdle={wasIdle} impact={impactSpeed:F3} impact01={impact01:F2} " +
+                $"[TOUCH-FINGER] key={keyIdx} finger={finger.fingerId} black={data.isBlackKey} " +
+                $"wasIdle={wasIdle} shouldSound={shouldSound} playedSound={playedSound} " +
+                $"rawImpact={rawImpactSpeed:F3} effectiveImpact={effectiveImpactSpeed:F3} " +
+                $"pos01={contactPosition01:F2} posFactor={positionImpactFactor:F2} impact01={impact01:F2} " +
                 $"pressAmount={state.pressAmount:F2} fillSpeed={state.pressFillSpeed:F2} " +
                 $"fingerCount={state.pressedFingerCount}"
             );
-        }
-
-        // 오디오는 Idle → Pressed 순간에만 Play
-        if (wasIdle)
-        {
-            pianoManager.OnPress(keyIdx, impact01);
         }
     }
 
@@ -770,14 +867,75 @@ public class VRKeyInputJudge : MonoBehaviour
                 continue;
             }
 
-            state.pressAmount = Mathf.MoveTowards(
-                state.pressAmount,
-                1f,
-                state.pressFillSpeed * Time.deltaTime
-            );
+            float contactPressAmount = CalculateContactPressAmount(state, data);
+
+            if (state.hasSounded)
+            {
+                // 빠르게 닿아서 실제 note on이 발생한 경우에는
+                // 기존처럼 pseudo-haptic 하강이 끝까지 채워지도록 유지한다.
+                state.pressAmount = Mathf.MoveTowards(
+                    state.pressAmount,
+                    1f,
+                    state.pressFillSpeed * Time.deltaTime
+                );
+
+                // 그래도 실제 접촉 기반 최소 눌림보다 작아지지 않게 보장.
+                state.pressAmount = Mathf.Max(state.pressAmount, contactPressAmount);
+            }
+            else
+            {
+                // 느리게 닿은 경우에는 소리는 내지 않고,
+                // 실제 접촉 깊이에 따른 최소 눌림만 보여준다.
+                state.pressAmount = contactPressAmount;
+            }
 
             state.targetAngle = GetMaxAngle(data) * state.pressAmount;
         }
+    }
+
+
+    private float CalculateContactPressAmount(VRKeyState state, VRKeyData data)
+    {
+        if (state == null || data == null) return 0f;
+
+        state.EnsureArrays();
+
+        float amount = 0f;
+
+        for (int f = 0; f < 10; f++)
+        {
+            if (!state.pressingFingers[f])
+            {
+                continue;
+            }
+
+            if (handTracker == null || handTracker.FingerData == null)
+            {
+                continue;
+            }
+
+            VRFingerData finger = handTracker.FingerData[f];
+
+            if (finger == null || !finger.isTracked)
+            {
+                // Occlusion hold 중에는 기존 눌림량을 유지한다.
+                amount = Mathf.Max(amount, state.pressAmount);
+                continue;
+            }
+
+            float depth = data.restTopLocalY + VRPianoConst.ContactTolerance - finger.localPos.y;
+            float depth01 = Mathf.Clamp01(depth / VRPianoConst.PressDepthForMaxAngle);
+
+            if (depth >= 0f)
+            {
+                amount = Mathf.Max(
+                    amount,
+                    Mathf.Max(VRPianoConst.TouchPressMin, depth01)
+                );
+            }
+        }
+
+        return Mathf.Clamp01(amount);
     }
 
     private void ReleaseFingerFromKey(
@@ -818,13 +976,20 @@ public class VRKeyInputJudge : MonoBehaviour
     {
         if (state == null) return;
 
+        bool shouldStopAudio = state.hasSounded;
+
         state.pressState = VRKeyPressState.Released;
         state.occupiedByFinger = -1;
         state.targetAngle = 0f;
         state.pressAmount = 0f;
         state.pressFillSpeed = 0f;
         state.impactSpeed = 0f;
+        state.rawImpactSpeed = 0f;
+        state.effectiveImpactSpeed = 0f;
+        state.contactPosition01 = 1f;
+        state.positionImpactFactor = 1f;
         state.contactStartTime = 0f;
+        state.hasSounded = false;
         state.pressedFingerCount = 0;
 
         state.EnsureArrays();
@@ -835,7 +1000,10 @@ public class VRKeyInputJudge : MonoBehaviour
             state.occlusionHoldStartByFinger[i] = 0f;
         }
 
-        pianoManager?.OnRelease(keyIdx);
+        if (shouldStopAudio)
+        {
+            pianoManager?.OnRelease(keyIdx);
+        }
 
         if (logRelease)
         {

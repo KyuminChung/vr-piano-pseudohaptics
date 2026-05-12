@@ -8,7 +8,7 @@ public class VRAudioPlayer : MonoBehaviour
     [Header("Audio Clips")]
     public bool loadFromResources = true;
     public string resourcesFolder = "Piano Audio";
-
+    
     [Tooltip("0=A0, 1=A#0, 2=B0, 3=C1 ...")]
     public AudioClip[] clips = new AudioClip[88];
 
@@ -20,7 +20,7 @@ public class VRAudioPlayer : MonoBehaviour
     public float maxVolume = 1.0f;
 
     [Tooltip("1보다 작으면 약한 입력도 조금 더 크게 들림")]
-    public float velocityCurve = 1.8f;
+    public float velocityCurve = 2.4f;
 
     [Header("Release")]
     [Tooltip("건반을 뗐을 때 바로 Stop하지 않고 이 시간 동안 볼륨을 줄임")]

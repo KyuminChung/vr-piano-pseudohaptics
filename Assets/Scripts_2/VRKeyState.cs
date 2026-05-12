@@ -3,7 +3,12 @@ using UnityEngine;
 public enum VRKeyPressState
 {
     Idle,
+
+    // 손가락이 책상/건반 표면에 실제로 닿아서
+    // 시각적으로는 건반이 눌린 상태.
+    // 단, hasSounded=false이면 아직 소리는 나지 않은 상태.
     Pressed,
+
     Released
 }
 
@@ -22,8 +27,22 @@ public class VRKeyState
     // Pseudo-haptic press model
     public float pressAmount = 0f;
     public float pressFillSpeed = 0f;
+
+    // 위치 보정까지 적용된 최종 impactSpeed.
+    // 기존 코드 호환을 위해 impactSpeed 이름은 유지한다.
     public float impactSpeed = 0f;
+
+    // 디버그/분석용: 원래 손가락 하강 속도와 위치 보정 정보.
+    public float rawImpactSpeed = 0f;
+    public float effectiveImpactSpeed = 0f;
+    public float contactPosition01 = 1f;
+    public float positionImpactFactor = 1f;
+
     public float contactStartTime = 0f;
+
+    // 접촉은 했지만 속도가 부족하면 소리는 내지 않는다.
+    // 한 번 소리가 난 건반은 release 전까지 중복 재생하지 않는다.
+    public bool hasSounded = false;
 
     // 한 건반을 여러 손가락이 동시에 누를 수 있음
     public bool[] pressingFingers = new bool[10];
@@ -42,7 +61,12 @@ public class VRKeyState
         pressAmount = 0f;
         pressFillSpeed = 0f;
         impactSpeed = 0f;
+        rawImpactSpeed = 0f;
+        effectiveImpactSpeed = 0f;
+        contactPosition01 = 1f;
+        positionImpactFactor = 1f;
         contactStartTime = 0f;
+        hasSounded = false;
 
         pressedFingerCount = 0;
 
